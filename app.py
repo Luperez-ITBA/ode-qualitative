@@ -32,7 +32,7 @@ if st.session_state.ejemplo_activo == '3.1':
     # Selector de punto de equilibrio
     pto_elegido = st.radio(
         "Seleccioná el punto de equilibrio a analizar:",
-        ["Ensilladura en (0, -1)", "Nodo atractor en (0, 1)"],
+        ["Ensilladura en (0, -1)", "Sumidero en (0, 1)"],
         horizontal=True
     )
     
@@ -66,7 +66,7 @@ if st.session_state.ejemplo_activo == '3.1':
     # Gráfico No Lineal
     ax1.streamplot(X, Y, U_nl, V_nl, density=1.2, color='royalblue')
     ax1.plot(0, -1, 'ko', markersize=8, label="Ensilladura (0,-1)")
-    ax1.plot(0, 1, 'ro', markersize=8, label="Nodo (0,1)")
+    ax1.plot(0, 1, 'ro', markersize=8, label="Sumidero (0,1)")
     ax1.set_title("Sistema No Lineal")
     ax1.set_xlim(cx - radio, cx + radio)
     ax1.set_ylim(cy - radio, cy + radio)
