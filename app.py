@@ -11,10 +11,10 @@ if 'ejemplo_activo' not in st.session_state:
 st.title("Estudio Cualitativo de ODEs: Teorema de Grobman-Hartman")
 
 # 2. Crear el menú visible tipo "íconos" con botones anchos
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    if st.button("🌟 Ejemplo 3.1: Equivalencia Local", use_container_width=True):
+    if st.button("🌟 Ejemplo 3.1: Equivalencia", use_container_width=True):
         st.session_state.ejemplo_activo = '3.1'
 with col2:
     if st.button("🌀 Ejemplo 3.2: Falla por Centro", use_container_width=True):
@@ -22,6 +22,9 @@ with col2:
 with col3:
     if st.button("⚠️ Ejemplo 3.3: Punto Degenerado", use_container_width=True):
         st.session_state.ejemplo_activo = '3.3'
+with col4:
+    if st.button("🌪️ Deformación de Espiral", use_container_width=True):
+        st.session_state.ejemplo_activo = 'espiral'
 
 st.markdown("---")
 
@@ -89,8 +92,6 @@ elif st.session_state.ejemplo_activo == '3.2':
     **Sistema no lineal:**  
     $\dot{x} = -y - ax(x^2+y^2)^{1/2}$  
     $\dot{y} = x - ay(x^2+y^2)^{1/2}$  
-    
-    El análisis lineal arroja autovalores puramente imaginarios (centro). Sin embargo, variando el parámetro $a$, vemos que el comportamiento topológico real depende de los términos no lineales.
     """)
     
     a_val = st.slider("Parámetro 'a' (término no lineal)", min_value=-2.0, max_value=2.0, value=1.0, step=0.1)
@@ -142,8 +143,6 @@ elif st.session_state.ejemplo_activo == '3.3':
     **Sistema no lineal:**  
     $\dot{x} = -x + y^2$  
     $\dot{y} = -y^3 + x^2$  
-    
-    El análisis lineal falla si el punto de equilibrio es degenerado (al menos un autovalor es cero). En el origen, la topología real es mucho más compleja que lo que predice su Jacobiano.
     """)
     
     pto_elegido_3 = st.radio(
@@ -171,11 +170,9 @@ elif st.session_state.ejemplo_activo == '3.3':
     V_nl = -Y**3 + X**2
     
     if "Degenerado" in pto_elegido_3:
-        # Jacobiano en (0,0): J = [[-1, 0], [0, 0]]
         U_l = -X
         V_l = np.zeros_like(Y)
     else:
-        # Jacobiano en (1,1): J = [[-1, 2], [2, -3]]
         U_l = -(X - 1) + 2 * (Y - 1)
         V_l = 2 * (X - 1) - 3 * (Y - 1)
     
@@ -184,7 +181,6 @@ elif st.session_state.ejemplo_activo == '3.3':
     ax1.streamplot(X, Y, U_nl, V_nl, density=1.5, color='purple')
     ax1.plot(cx, cy, 'ko', markersize=8, label=f"Equilibrio ({cx},{cy})")
     
-    # Marcar el otro punto si entra en el radio
     if radio_3 >= 1.2:
         if cx == 0:
             ax1.plot(1, 1, 'ro', markersize=8, label="Ensilladura (1,1)")
@@ -201,6 +197,50 @@ elif st.session_state.ejemplo_activo == '3.3':
     ax2.set_title(titulo_l)
     ax2.set_xlim(cx - radio_3, cx + radio_3)
     ax2.set_ylim(cy - radio_3, cy + radio_3)
+    ax2.legend(loc='upper right')
+    
+    st.pyplot(fig)
+
+elif st.session_state.ejemplo_activo == 'espiral':
+    st.subheader("Deformación Anisotrópica de una Espiral")
+    
+    st.markdown("""
+    **Sistema no lineal (Foco deformado por término cuadrático):**  
+    $\dot{x} = -x - 5y + a \cdot x^2$  
+    $\dot{y} = 5x - y$  
+    
+    El análisis lineal nos da un foco sumidero perfecto. Al incrementar el parámetro $a$, el término no lineal altera fuertemente la geometría (rompe la simetría de la espiral logarítmica) pero no altera la topología local, cumpliendo Grobman-Hartman.
+    """)
+    
+    coef_a = st.slider("Parámetro 'a' (Intensidad de la perturbación $x^2$)", min_value=0.0, max_value=5.0, value=2.5, step=0.5)
+    
+    radio_esp = 2.0
+    x = np.linspace(-radio_esp, radio_esp, 400)
+    y = np.linspace(-radio_esp, radio_esp, 400)
+    X, Y = np.meshgrid(x, y)
+    
+    # Campo lineal
+    U_l = -X - 5*Y
+    V_l = 5*X - Y
+    
+    # Campo no lineal
+    U_nl = -X - 5*Y + coef_a * X**2
+    V_nl = 5*X - Y
+    
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
+    
+    ax1.streamplot(X, Y, U_nl, V_nl, density=1.2, color='darkmagenta')
+    ax1.plot(0, 0, 'ko', markersize=8, label="Equilibrio (0,0)")
+    ax1.set_title(f"Sistema No Lineal (Espiral Deformada, a={coef_a})")
+    ax1.set_xlim(-radio_esp, radio_esp)
+    ax1.set_ylim(-radio_esp, radio_esp)
+    ax1.legend(loc='upper right')
+    
+    ax2.streamplot(X, Y, U_l, V_l, density=1.2, color='teal')
+    ax2.plot(0, 0, 'ko', markersize=8, label="Equilibrio (0,0)")
+    ax2.set_title("Linealización (Espiral Isotrópica)")
+    ax2.set_xlim(-radio_esp, radio_esp)
+    ax2.set_ylim(-radio_esp, radio_esp)
     ax2.legend(loc='upper right')
     
     st.pyplot(fig)
