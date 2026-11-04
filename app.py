@@ -4,13 +4,11 @@ import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Grobman-Hartman Explorer", layout="wide")
 
-# 1. Inicializar la variable de estado para la navegación
 if 'ejemplo_activo' not in st.session_state:
     st.session_state.ejemplo_activo = '3.1'
 
 st.title("Estudio Cualitativo de ODEs: Teorema de Grobman-Hartman")
 
-# 2. Crear el menú visible tipo "íconos" con botones anchos
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
@@ -28,7 +26,6 @@ with col4:
 
 st.markdown("---")
 
-# 3. Mostrar el contenido dependiendo del botón activo
 if st.session_state.ejemplo_activo == '3.1':
     st.subheader("Ejemplo 3.1: Equivalencia Local")
     
@@ -36,8 +33,6 @@ if st.session_state.ejemplo_activo == '3.1':
     **Sistema no lineal:**  
     $\dot{x} = -x$  
     $\dot{y} = 1 - x^2 - y^2$  
-    
-    El análisis de este sistema nos da dos puntos críticos de interés topológico distinto para aplicar el teorema.
     """)
     
     pto_elegido = st.radio(
@@ -137,7 +132,7 @@ elif st.session_state.ejemplo_activo == '3.2':
     st.pyplot(fig)
 
 elif st.session_state.ejemplo_activo == '3.3':
-    st.subheader("Ejemplo 3.3: Punto Crítico Degenerado")
+    st.subheader("Ejemplo 3.3: Punto Crítico Degenerado y Variedad Central")
     
     st.markdown("""
     **Sistema no lineal:**  
@@ -145,18 +140,25 @@ elif st.session_state.ejemplo_activo == '3.3':
     $\dot{y} = -y^3 + x^2$  
     """)
     
-    pto_elegido_3 = st.radio(
-        "Seleccioná el punto de equilibrio a analizar:",
-        ["Punto Degenerado en (0, 0)", "Ensilladura en (1, 1)"],
-        horizontal=True
-    )
-    
+    col_sel_1, col_sel_2 = st.columns(2)
+    with col_sel_1:
+        pto_elegido_3 = st.radio(
+            "Seleccioná el punto de equilibrio a analizar:",
+            ["Punto Degenerado en (0, 0)", "Ensilladura en (1, 1)"],
+            horizontal=True
+        )
+    with col_sel_2:
+        if "Degenerado" in pto_elegido_3:
+            mostrar_wc = st.checkbox("Mostrar Variedad Central ($W^c: x \\approx y^2$)", value=False)
+        else:
+            mostrar_wc = False
+            
     radio_3 = st.slider("Radio del entorno", 0.05, 2.0, 1.5, 0.05, key="slider_3_3")
     
     if "Degenerado" in pto_elegido_3:
         cx, cy = 0, 0
         color_l = 'gray'
-        titulo_l = "Linealización (Falla: Campo unidimensional)"
+        titulo_l = "Linealización (Colapso sobre el eje Y)"
     else:
         cx, cy = 1, 1
         color_l = 'seagreen'
@@ -180,6 +182,11 @@ elif st.session_state.ejemplo_activo == '3.3':
     
     ax1.streamplot(X, Y, U_nl, V_nl, density=1.5, color='purple')
     ax1.plot(cx, cy, 'ko', markersize=8, label=f"Equilibrio ({cx},{cy})")
+    
+    # Graficar W^c si el checkbox está activo
+    if mostrar_wc:
+        y_c = np.linspace(-radio_3, radio_3, 400)
+        ax1.plot(y_c**2, y_c, color='darkorange', linewidth=3, linestyle='--', label="Variedad Central $W^c$")
     
     if radio_3 >= 1.2:
         if cx == 0:
@@ -208,8 +215,6 @@ elif st.session_state.ejemplo_activo == 'espiral':
     **Sistema no lineal (Foco deformado por término cuadrático):**  
     $\dot{x} = -x - 5y + a \cdot x^2$  
     $\dot{y} = 5x - y$  
-    
-    El análisis lineal nos da un foco sumidero perfecto. Al incrementar el parámetro $a$, el término no lineal altera fuertemente la geometría (rompe la simetría de la espiral logarítmica) pero no altera la topología local, cumpliendo Grobman-Hartman.
     """)
     
     coef_a = st.slider("Parámetro 'a' (Intensidad de la perturbación $x^2$)", min_value=0.0, max_value=5.0, value=2.5, step=0.5)
@@ -219,11 +224,9 @@ elif st.session_state.ejemplo_activo == 'espiral':
     y = np.linspace(-radio_esp, radio_esp, 400)
     X, Y = np.meshgrid(x, y)
     
-    # Campo lineal
     U_l = -X - 5*Y
     V_l = 5*X - Y
     
-    # Campo no lineal
     U_nl = -X - 5*Y + coef_a * X**2
     V_nl = 5*X - Y
     
